@@ -38,7 +38,12 @@ const controller = {
 	
 	// Create -  Method to store
 	store: (req, res) => {
-		const file = req.file
+		console.log("req:", req)
+		const files = req.files;
+		const images = [];
+		files.forEach(element => {
+			images.push(element.filename);
+		});
 		const id = uuidv4();
 		const {name, price, discount, category, description} = req.body;
 		const products = getJson();
@@ -49,7 +54,7 @@ const controller = {
 			discount,
 			category,
 			description: description.trim(),
-			image: file ? file.filename : "default.jpg",
+			images: files ? images : ["default.jpg"],
 		}
 		products.push(product)
 		const json = JSON.stringify(products);
@@ -92,8 +97,19 @@ const controller = {
 	destroy : (req, res) => {
 		const {id} = req.params;
 		const productos = getJson();
+		const product = productos.find(product => product.id == id);
 		const listaNueva = productos.filter(elemento => elemento.id != id);
 		const json = JSON.stringify(listaNueva);
+		
+		// product.image.forEach(image =>{
+		// fs.unlink(`./public/images/products/${product.image}`)
+		// })
+
+		fs.unlink(`./public/images/products/${product.image}`,(err)=>{
+		if(err) throw err;
+
+		});
+
 		fs.writeFileSync(productsFilePath, json, "utf-8");
 		res.redirect("/products")
 	}
